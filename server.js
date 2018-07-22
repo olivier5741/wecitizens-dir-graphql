@@ -5,6 +5,8 @@ const {buildSchema} = require('graphql');
 
 // Construct a schema, using GraphQL schema language
 let schema = buildSchema(`
+  scalar Date
+
   type Query {
     politicians: [Politician]!
   }
@@ -16,6 +18,7 @@ let schema = buildSchema(`
     lastName: String
     email: String
     personal: PoliticianPersonal
+    achievements: [String]
   }
   
   type PoliticianPersonal {
@@ -24,6 +27,11 @@ let schema = buildSchema(`
     gsm: String
     fax: String
     address: Address
+    birthDate: Date
+    birthPlace: String
+    deathDate: Date
+    gender: String
+    language: String
   }
   
   type Address {
@@ -54,14 +62,22 @@ let root = {
             "  home_gsm    as `personal.gsm`,\n" +
             "  home_street as `personal.address.street`,\n" +
             "  home_city as `personal.address.city`,\n" +
-            "  home_postcode as `personal.address.postcode`\n" +
+            "  home_postcode as `personal.address.postcode`,\n" +
+            "  personal_birth as `personal.birthDate`,\n" +
+            "  personal_birthplace as `personal.birthPlace`,\n" +
+            "  personal_date_of_death as `personal.deathDate`,\n" +
+            "  personal_gender as `personal.gender`,\n" +
+            "  personal_language as `personal.language`,\n" +
+            "  success1 as `achievements.1`,\n" +
+            "  success2 as `achievements.2`,\n" +
+            "  success3 as `achievements.3`\n" +
             "from\n" +
             "  wecitizens_poldir.politician;";
         
         let p = new Promise((resolve, reject) => {
             sequelize.query(q).spread((results, metadata) => {
                 
-                resolve(results.map(r => unflatten(r)));
+                resolve(removeNulls(results.map(r => unflatten(r))));
                 //return results;
             });
         });
@@ -69,6 +85,16 @@ let root = {
         return Promise.resolve(p);
     },
 };
+
+function removeNulls(obj) {
+    let isArray = obj instanceof Array;
+    for (let k in obj) {
+        if (obj[k] === null) isArray ? obj.splice(k, 1) : delete obj[k];
+        else if (typeof obj[k] == "object") removeNulls(obj[k]);
+        if (isArray && obj.length == k) removeNulls(obj);
+    }
+    return obj;
+}
 
 function unflatten(data) {
     let result = {};

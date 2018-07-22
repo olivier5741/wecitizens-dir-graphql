@@ -18,7 +18,9 @@ search
       address {
         city
       }
+      birthDate
     }
+    achievements
   }
 }
 ```
