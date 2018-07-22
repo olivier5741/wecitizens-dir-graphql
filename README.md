@@ -11,6 +11,14 @@ search
   politicians {
     id
     key
+    lastName
+    email
+    personal {
+      gsm
+      address {
+        city
+      }
+    }
   }
 }
 ```
