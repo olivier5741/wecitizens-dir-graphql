@@ -8,11 +8,13 @@ search
 
 ```graphql
 {
-  politicians {
-    id
-    key
-    lastName
-    email
+  profiles {
+    identity {
+      id
+      key
+      lastName
+      email 
+    }    
     personal {
       gsm
       address {
@@ -20,7 +22,16 @@ search
       }
       birthDate
     }
-    achievements
+    social {
+      facebook
+    }
+    professional {
+      education
+    }
+    political {
+      quote
+      slogan
+    }
   }
 }
 ```

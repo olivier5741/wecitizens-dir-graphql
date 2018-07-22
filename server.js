@@ -8,21 +8,30 @@ let schema = buildSchema(`
   scalar Date
 
   type Query {
-    politicians: [Politician]!
+    profiles: [Profile]!
   }
   
-  type Politician {
-    id: String
-    key: String
-    firstName: String
-    lastName: String
-    email: String
-    personal: PoliticianPersonal
+  type Profile {
+    identity: IdentityProfile
+    personal: PersonalProfile
+    political: PoliticalProfile
+    professional: ProfessionalProfile
+    social: SocialProfile
     achievements: [String]
     priorities: [String]
   }
   
-  type PoliticianPersonal {
+  type IdentityProfile {
+    id: String
+    key: String
+    firstName: String
+    lastName: String
+    title: String
+    titleSpoken: String
+    email: String
+  }
+  
+  type PersonalProfile {
     email: String
     phone: String
     gsm: String
@@ -33,6 +42,8 @@ let schema = buildSchema(`
     deathDate: Date
     gender: String
     language: String
+    numberOfChildren: Int
+    belief: String
   }
   
   type Address {
@@ -40,6 +51,27 @@ let schema = buildSchema(`
     zipcode: String
     city: String
   }
+  
+  type PoliticalProfile {
+    function: String
+    slogan: String
+    quote: String
+  }
+  
+  type ProfessionalProfile {
+    education: String
+    experience: String
+  }
+    
+  type SocialProfile {
+    facebook: String
+    twitter: String
+    flickr: String
+    website: String
+    xing: String
+    youtube: String
+  }
+  
 `);
 
 const sequelize = new Sequelize('mysql://root:root@localhost:3306/wecitizens_poldir');
@@ -50,32 +82,63 @@ function search() {
 
 // The root provides a resolver function for each API endpoint
 let root = {
-    politicians: () => {
+    profiles: () => {
         const q = "select\n" +
             "  id,\n" +
-            "  ident       as `key`,\n" +
-            "  name        as firstName,\n" +
-            "  surname     as lastName,\n" +
-            "  email,\n" +
-            "  home_phone  as `personal.phone`,\n" +
-            "  home_email  as `personal.email`,\n" +
-            "  home_fax    as `personal.fax`,\n" +
-            "  home_gsm    as `personal.gsm`,\n" +
-            "  home_street as `personal.address.street`,\n" +
-            "  home_city as `personal.address.city`,\n" +
-            "  home_postcode as `personal.address.postcode`,\n" +
-            "  personal_birth as `personal.birthDate`,\n" +
-            "  personal_birthplace as `personal.birthPlace`,\n" +
-            "  personal_date_of_death as `personal.deathDate`,\n" +
-            "  personal_gender as `personal.gender`,\n" +
-            "  personal_language as `personal.language`,\n" +
-            "  success1 as `achievements.1`,\n" +
-            "  success2 as `achievements.2`,\n" +
-            "  success3 as `achievements.3`,\n" +
-            "  priority1_text as `priorities.1`,\n" +
-            "  priority2_text as `priorities.2`,\n" +
-            "  priority3_text as `priorities.3`,\n" +
-            "  priority4_text as `priorities.4`\n" +
+            "  ident                            as `identity.key`,\n" +
+            "  name                             as `identity.firstName`,\n" +
+            "  surname                          as `identity.lastName`,\n" +
+            "  title_written                    as `identity.title`,\n" +
+            "  title_spoken                     as `identity.titleSpoken`,\n" +
+            "  email                            as `identity.email`,\n" +
+            "\n" +
+            "  #  id_party as `party.id`,\n" +
+            "\n" +
+            "  home_phone                       as `personal.phone`,\n" +
+            "  home_email                       as `personal.email`,\n" +
+            "  home_fax                         as `personal.fax`,\n" +
+            "  home_gsm                         as `personal.gsm`,\n" +
+            "\n" +
+            "  home_street                      as `personal.address.street`,\n" +
+            "  home_city                        as `personal.address.city`,\n" +
+            "  home_postcode                    as `personal.address.postcode`,\n" +
+            "\n" +
+            "  personal_birth                   as `personal.birthDate`,\n" +
+            "  personal_birthplace              as `personal.birthPlace`,\n" +
+            "  personal_date_of_death           as `personal.deathDate`,\n" +
+            "  personal_gender                  as `personal.gender`,\n" +
+            "  personal_language                as `personal.language`,\n" +
+            "  personal_children                as `personal.numberOfChildren`,\n" +
+            "  personal_belief                  as `personal.belief`,\n" +
+            "\n" +
+            "  personal_education               as `professional.education`,\n" +
+            "  personal_professional_experience as `professional.experience`,\n" +
+            "\n" +
+            "  social_facebook                  as `social.facebook`,\n" +
+            "  social_flickr                    as `social.flickr`,\n" +
+            "  social_twitter                   as `social.twitter`,\n" +
+            "  social_website                   as `social.website`,\n" +
+            "  social_xing                      as `social.xing`,\n" +
+            "  social_youtube                   as `social.youtube`,\n" +
+            "\n" +
+            "  success1                         as `achievements.1`,\n" +
+            "  success2                         as `achievements.2`,\n" +
+            "  success3                         as `achievements.3`,\n" +
+            "\n" +
+            "  priority1_text                   as `priorities.1`,\n" +
+            "  priority2_text                   as `priorities.2`,\n" +
+            "  priority3_text                   as `priorities.3`,\n" +
+            "  priority4_text                   as `priorities.4`,\n" +
+            "\n" +
+            "  #  personal_electoral_score         as `political.election.score1`,\n" +
+            "  #  electoral_score                  as `political.election.score1`,\n" +
+            "  #  electoral_score_vote             as `political.election.vote`,\n" +
+            "\n" +
+            "  political_function               as `political.function`,\n" +
+            "  slogan                           as `political.slogan`,\n" +
+            "  quotes                           as `political.quote`\n" +
+            "\n" +
+            "#  parliament_activity              as `political.parliament.activity`\n" +
             "from\n" +
             "  wecitizens_poldir.politician;";
         
