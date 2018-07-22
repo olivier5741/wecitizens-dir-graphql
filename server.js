@@ -19,6 +19,7 @@ let schema = buildSchema(`
     email: String
     personal: PoliticianPersonal
     achievements: [String]
+    priorities: [String]
   }
   
   type PoliticianPersonal {
@@ -70,14 +71,18 @@ let root = {
             "  personal_language as `personal.language`,\n" +
             "  success1 as `achievements.1`,\n" +
             "  success2 as `achievements.2`,\n" +
-            "  success3 as `achievements.3`\n" +
+            "  success3 as `achievements.3`,\n" +
+            "  priority1_text as `priorities.1`,\n" +
+            "  priority2_text as `priorities.2`,\n" +
+            "  priority3_text as `priorities.3`,\n" +
+            "  priority4_text as `priorities.4`\n" +
             "from\n" +
             "  wecitizens_poldir.politician;";
         
         let p = new Promise((resolve, reject) => {
             sequelize.query(q).spread((results, metadata) => {
                 
-                resolve(removeNulls(results.map(r => unflatten(r))));
+                resolve(removeEmpty(results.map(r => unflatten(r))));
                 //return results;
             });
         });
@@ -86,15 +91,20 @@ let root = {
     },
 };
 
-function removeNulls(obj) {
-    let isArray = obj instanceof Array;
-    for (let k in obj) {
-        if (obj[k] === null) isArray ? obj.splice(k, 1) : delete obj[k];
-        else if (typeof obj[k] == "object") removeNulls(obj[k]);
-        if (isArray && obj.length == k) removeNulls(obj);
-    }
-    return obj;
-}
+const removeEmpty = (obj) => {
+    const o = JSON.parse(JSON.stringify(obj)); // Clone source oect.
+
+    Object.keys(o).forEach(key => {
+        if (o[key] && typeof o[key] === 'object')
+            o[key] = removeEmpty(o[key]);  // Recurse.
+        else if (o[key] === undefined || o[key] === null)
+            delete o[key]; // Delete undefined and null.
+        else
+            o[key] = o[key];  // Copy value.
+    });
+
+    return o; // Return new object.
+};
 
 function unflatten(data) {
     let result = {};
