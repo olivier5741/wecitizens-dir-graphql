@@ -1,3 +1,4 @@
+const Sequelize = require('sequelize');
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
 const {buildSchema} = require('graphql');
@@ -11,27 +12,30 @@ let schema = buildSchema(`
   type Politician {
     id: String
     key: String
-    firstName: String
-    lastName: String
+    firstname: String
+    lastname: String
   }
 `);
+
+const sequelize = new Sequelize('mysql://root:root@localhost:3306/wecitizens_poldir');
+
+function search() {
+    
+}
 
 // The root provides a resolver function for each API endpoint
 let root = {
     politicians: () => {
-        return [
-            {
-                id: "1421",
-                key: "o.wouters",
-                firstName: "Olivier",
-                lastName: "Wouters"
-            },
-            {
-                id: "1422",
-                key: "d.sum",
-                firstName: "Daniel",
-                lastName: "Sum"
-            }];
+        const q = 'SELECT id, ident as `key`, name as firstname, surname as lastname FROM wecitizens_poldir.politician;';
+
+        let p = new Promise((resolve, reject) => {
+            sequelize.query(q).spread((results, metadata) => {
+                resolve(results);
+                //return results;
+            });
+        });
+        
+        return Promise.resolve(p);
     },
 };
 
