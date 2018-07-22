@@ -12,8 +12,8 @@ let schema = buildSchema(`
   type Politician {
     id: String
     key: String
-    firstname: String
-    lastname: String
+    firstName: String
+    lastName: String
   }
 `);
 
@@ -26,7 +26,7 @@ function search() {
 // The root provides a resolver function for each API endpoint
 let root = {
     politicians: () => {
-        const q = 'SELECT id, ident as `key`, name as firstname, surname as lastname FROM wecitizens_poldir.politician;';
+        const q = 'SELECT id, ident as `key`, name as firstName, surname as lastName FROM wecitizens_poldir.politician;';
 
         let p = new Promise((resolve, reject) => {
             sequelize.query(q).spread((results, metadata) => {
