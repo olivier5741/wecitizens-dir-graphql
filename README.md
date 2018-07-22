@@ -4,7 +4,7 @@ run `node server.js`
 
 go to http://localhost:4000/graphql
 
-search
+**get all profiles**
 
 ```graphql
 {
@@ -31,6 +31,21 @@ search
     political {
       quote
       slogan
+    }
+  }
+}
+```
+
+**get a profile**
+
+```graphql
+{
+  Profile(id:235) {
+    identity {
+      key
+    }
+    political {
+      function
     }
   }
 }
